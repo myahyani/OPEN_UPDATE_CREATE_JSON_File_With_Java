@@ -1,0 +1,16 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="JSON_TP:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/JSON_TP_jar</output-path>
+    <root id="archive" name="JSON_TP.jar">
+      <element id="module-output" name="JSON_TP" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/../json-simple-3.0.2.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/com/googlecode/json-simple/json-simple/1.1.1/json-simple-1.1.1.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/../json-simple-2.3.1.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/../itest-json-simple-parser-1.5.0.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/../json-20131018.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/../json-simple-1.1.1.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/../json-simple-ordered-2.21.1.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/../json-20190722.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>
