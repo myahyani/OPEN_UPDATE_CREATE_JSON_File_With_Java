@@ -7,16 +7,18 @@
  * @Cours: INF2050-20
  * @version 2021-01-26
  **/
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
+
+import com.google.gson.GsonBuilder;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import com.google.gson.Gson;
 
 public class Remboursements {
     public static void main(String[] args) throws IOException, ParseException {
@@ -24,7 +26,7 @@ public class Remboursements {
         boolean isValid = valid(l1);
         if (isValid){
             List<String> remboursements = calcul(l1);
-            JSONObject fileJSON = JSONOutputfile("refunds.json", l1, remboursements);
+            Map<String, String> fileJSON = JSONOutputfile("refunds.json", l1, remboursements);
         } else {
             JSONMessageErreur("Erreur.json");
         }
@@ -357,8 +359,12 @@ public class Remboursements {
     public static void JSONMessageErreur(String filename) {
         JSONObject messageErreur = new JSONObject();
         messageErreur.put("message", "Données invalides");
+        Gson gson = new GsonBuilder()
+                .setPrettyPrinting()
+                .create();
+        String erreur = gson.toJson(messageErreur, LinkedHashMap.class);
         try {
-            Files.write(Paths.get(filename), messageErreur.toJSONString().getBytes());
+            Files.write(Paths.get(filename), erreur.getBytes());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -369,7 +375,7 @@ public class Remboursements {
      *
      * @return un fichier JSONObject.
      */
-    public static JSONObject JSONOutputfile(String filename, List<String> list, List<String> nvList) {
+    public static Map<String, String> JSONOutputfile(String filename, List<String> list, List<String> nvList) {
         List<String> finalList = new ArrayList<String>();
         finalList.add(0, list.get(0));
         finalList.add(1, list.get(2));
@@ -381,24 +387,27 @@ public class Remboursements {
                 finalList.add(list.get(i));
             }
         }
-        JSONObject outputObj = new JSONObject();
-        String client = finalList.get(0);
-        String mois = finalList.get(1);
         JSONArray remboursements = new JSONArray();
         for (int i = 2; i < finalList.size(); i += 3){
-            JSONObject remboursement = new JSONObject();
+            LinkedHashMap remboursement = new LinkedHashMap();
             int soin = Integer.parseInt(finalList.get(i));
             remboursement.put("soin", soin);
             remboursement.put("date", finalList.get(i + 1));
             remboursement.put("montant", finalList.get(i + 2) + "$");
             remboursements.add(remboursement);
         }
-        outputObj.put("client", client);
-        outputObj.put("mois", mois);
+        LinkedHashMap outputObj = new LinkedHashMap();
+        outputObj.put("client", list.get(0));
+        outputObj.put("mois", list.get(2));
         outputObj.put("remboursements", remboursements);
-        System.out.println(outputObj);
+        JSONObject object = new JSONObject();
+        object.putAll(outputObj);
+        Gson gson = new GsonBuilder()
+                .setPrettyPrinting()
+                .create();
+        String refunds = gson.toJson(outputObj, LinkedHashMap.class);
         try {
-            Files.write(Paths.get(filename), outputObj.toJSONString().getBytes());
+            Files.write(Paths.get(filename), refunds.getBytes());
         } catch (IOException e) {
             e.printStackTrace();
         }
