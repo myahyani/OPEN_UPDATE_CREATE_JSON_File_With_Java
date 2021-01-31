@@ -22,11 +22,11 @@ import com.google.gson.Gson;
 
 public class Remboursements {
     public static void main(String[] args) throws IOException, ParseException {
-        List<String> l1 = CreateListe();
-        boolean isValid = valid(l1);
-        if (isValid){
-            List<String> remboursements = calcul(l1);
-            Map<String, String> fileJSON = JSONOutputfile("refunds.json", l1, remboursements);
+        List<String> list = CreateListe();
+        boolean isValid = valid(list);
+        if (isValid) {
+            List<String> refunds = calcul(list);
+            Map<String, String> fileJSON = JSONOutputfile("refunds.json", list, refunds);
         } else {
             JSONMessageErreur("Erreur.json");
         }
@@ -39,185 +39,191 @@ public class Remboursements {
      */
     public static List<String> CreateListe() throws IOException, ParseException {
         List<String> list = new ArrayList<>();
-        list1(list);
-        list2(list);
+        CreateObjectFromJSON(list);
+        CreateArrayFromJSON(list);
         return list;
     }
-    public static void list1(List<String> list) throws IOException, ParseException {
+    /** Permet de lire le fichier inputFile.json
+     * et ajouter les valeurs JSONObject dans List<String>
+     */
+    public static void CreateObjectFromJSON(List<String> list) throws IOException, ParseException {
         JSONParser parser = new JSONParser();
-        Object obj = parser.parse(new FileReader("inputfile.json"));
-        JSONObject patient = (JSONObject) obj;
+        Object object = parser.parse(new FileReader("inputfile.json"));
+        JSONObject patient = (JSONObject) object;
         list.add((String) patient.get("client"));
         list.add((String) patient.get("contrat"));
         list.add((String) patient.get("mois"));
         JSONArray jsonArray = (JSONArray) patient.get("reclamations");
     }
-    public static void list2(List<String> list) throws IOException, ParseException {
+    /** Permet de lire le fichier inputFile.json
+     * et ajouter les valeurs JSONArray dans List<String>
+     */
+    public static void CreateArrayFromJSON(List<String> list) throws IOException, ParseException {
         JSONParser parser = new JSONParser();
         Object obj = parser.parse(new FileReader("inputfile.json"));
         JSONObject patient = (JSONObject) obj;
         JSONArray jsonArray = (JSONArray) patient.get("reclamations");
         Iterator<JSONObject> iterator = jsonArray.iterator();
         while (iterator.hasNext()) {
-            JSONObject rec = iterator.next();
-            String soin = String.valueOf(rec.get("soin"));
-            list.add(soin);
-            list.add((String) rec.get("date"));
-            list.add((String) rec.get("montant"));
+            JSONObject saveData = iterator.next();
+            String care = String.valueOf(saveData.get("soin"));
+            list.add(care);
+            list.add((String) saveData.get("date"));
+            list.add((String) saveData.get("montant"));
         }
     }
 
     /**
-     * Permet de retourner une nouvelle liste 'nvList'
+     * Permet de retourner une nouvelle liste 'newList'
      * qui contient les valeurs de remboursement après les calculs,
      * selon le type de contrat et numéro de soin.
      *
      * @return Une liste List<String>.
      */
     public static List<String> calcul(List<String> list) {
-        List<String> nvList = new ArrayList<>();
-        String contrat = list.get(1);
-        if (contrat.equals("A")) {
-            nvList = calculContratA(list);
-        } else if (contrat.equals("B")) {
-            nvList = calculContratB(list);
-        } else if (contrat.equals("C")) {
-            nvList = calculContratC(list);
-        } else if (contrat.equals("D")) {
-            nvList = calculContratD(list);
+        List<String> newList = new ArrayList<>();
+        String contract = list.get(1);
+        if (contract.equals("A")) {
+            newList = calculcontractA(list);
+        } else if (contract.equals("B")) {
+            newList = calculcontractB(list);
+        } else if (contract.equals("C")) {
+            newList = calculcontractC(list);
+        } else if (contract.equals("D")) {
+            newList = calculcontractD(list);
         }
-        return nvList;
+        return newList;
     }
     /**
-     * Permet de retourner une nouvelle liste 'nvList'
+     * Permet de retourner une nouvelle liste 'newList'
      * qui contient les valeurs de remboursement après les calculs,
      * si le contrat est du type "A" selon numéro de soin.
      *
      * @return Une liste List<String>.
      */
-    public static List<String> calculContratA(List<String> list){
-        List<String> nvList = new ArrayList<>();
+    public static List<String> calculcontractA(List<String> list) {
+        List<String> newList = new ArrayList<>();
         for (int i = 3; i < list.size(); i += 3) {
-            int soin = Integer.parseInt(list.get(i));
-            float nvMontant = replaceAllMontant(list, i);
-            if (soin == 0 || soin == 100 || soin == 200 || soin == 500) {
-                nvMontant *= 0.25;
-            } else if (soin >= 300 && soin <= 400 || soin == 700) {
-                nvMontant = 0;
-            } else if (soin == 600) {
-                nvMontant *= 0.4;
+            int care = Integer.parseInt(list.get(i));
+            float newPrice = replaceAllPrices(list, i);
+            if (care == 0 || care == 100 || care == 200 || care == 500) {
+                newPrice *= 0.25;
+            } else if (care >= 300 && care <= 400 || care == 700) {
+                newPrice = 0;
+            } else if (care == 600) {
+                newPrice *= 0.4;
             }
-            String remboursement = String.format("%.2f", nvMontant);
-            nvList.add(remboursement);
+            String refund = String.format("%.2f", newPrice);
+            newList.add(refund);
         }
-        return nvList;
+        return newList;
     }
     /**
-     * Permet de retourner une nouvelle liste 'nvList'
+     * Permet de retourner une nouvelle liste 'newList'
      * qui contient les valeurs de remboursement après les calculs,
      * si le contrat est du type "B" selon numéro de soin.
      *
      * @return Une liste List<String>.
      */
-    public static List<String> calculContratB(List<String> list){
-        List<String> nvList = new ArrayList<>();
+    public static List<String> calculcontractB(List<String> list) {
+        List<String> newList = new ArrayList<>();
         for (int i = 3; i < list.size(); i += 3) {
-            int soin = Integer.parseInt(list.get(i));
-            float nvMontant = replaceAllMontant(list, i);
-            if (soin == 0) {
-                nvMontant *= 0.50;
-                if (nvMontant > 40) {
-                    nvMontant = 40;
+            int care = Integer.parseInt(list.get(i));
+            float newPrice = replaceAllPrices(list, i);
+            if (care == 0) {
+                newPrice *= 0.50;
+                if (newPrice > 40) {
+                    newPrice = 40;
                 }
-            } else if (soin == 100 || soin == 500) {
-                nvMontant *= 0.50;
-                if (nvMontant > 50) {
-                    nvMontant = 50;
+            } else if (care == 100 || care == 500) {
+                newPrice *= 0.50;
+                if (newPrice > 50) {
+                    newPrice = 50;
                 }
-            } else if (soin == 200) {
-                nvMontant *= 1;
-                if (nvMontant > 70) {
-                    nvMontant = 70;
+            } else if (care == 200) {
+                newPrice *= 1;
+                if (newPrice > 70) {
+                    newPrice = 70;
                 }
-            } else if (soin >= 300 && soin < 400) {
-                nvMontant *= 0.5;
-            } else if (soin == 400) {
-                nvMontant = 0;
-            } else if (soin == 600) {
-                nvMontant *= 1;
-            } else if (soin == 700) {
-                nvMontant *= 0.7;
+            } else if (care >= 300 && care < 400) {
+                newPrice *= 0.5;
+            } else if (care == 400) {
+                newPrice = 0;
+            } else if (care == 600) {
+                newPrice *= 1;
+            } else if (care == 700) {
+                newPrice *= 0.7;
             }
-            String remboursement = String.format("%.2f", nvMontant);
-            nvList.add(remboursement);
+            String refund = String.format("%.2f", newPrice);
+            newList.add(refund);
         }
-        return nvList;
+        return newList;
     }
     /**
-     * Permet de retourner une nouvelle liste 'nvList'
+     * Permet de retourner une nouvelle liste 'newList'
      * qui contient les valeurs de remboursement après les calculs,
      * si le contrat est du type "C" selon numéro de soin.
      *
      * @return Une liste List<String>.
      */
-    public static List<String> calculContratC(List<String> list){
-        List<String> nvList = new ArrayList<>();
+    public static List<String> calculcontractC(List<String> list) {
+        List<String> newList = new ArrayList<>();
         for (int i = 3; i < list.size(); i += 3) {
-            int soin = Integer.parseInt(list.get(i));
-            float nvMontant = replaceAllMontant(list, i);
-            if (soin == 0 || soin == 100 || soin == 200 || soin >= 300 && soin <= 400
-                    || soin == 500 || soin == 600 || soin == 700) {
-                nvMontant *= 0.90;
+            int care = Integer.parseInt(list.get(i));
+            float newPrice = replaceAllPrices(list, i);
+            if (care == 0 || care == 100 || care == 200 || care >= 300 && care <= 400 
+                    || care == 500 || care == 600 || care == 700) {
+                newPrice *= 0.90;
             }
-            String remboursement = String.format("%.2f", nvMontant);
-            nvList.add(remboursement);
+            String refund = String.format("%.2f", newPrice);
+            newList.add(refund);
         }
-        return nvList;
+        return newList;
     }
     /**
-     * Permet de retourner une nouvelle liste 'nvList'
+     * Permet de retourner une nouvelle liste 'newList'
      * qui contient les valeurs de remboursement après les calculs,
      * si le contrat est du type "D" selon numéro de soin.
      *
      * @return Une liste List<String>.
      */
-    public static List<String> calculContratD(List<String> list){
-        List<String> nvList = new ArrayList<>();
+    public static List<String> calculcontractD(List<String> list) {
+        List<String> newList = new ArrayList<>();
         for (int i = 3; i < list.size(); i += 3) {
-            int soin = Integer.parseInt(list.get(i));
-            float nvMontant = replaceAllMontant(list, i);
-            if (soin == 0) {
-                nvMontant *= 1;
-                if (nvMontant > 85) {
-                    nvMontant = 85;
+            int care = Integer.parseInt(list.get(i));
+            float newPrice = replaceAllPrices(list, i);
+            if (care == 0) {
+                newPrice *= 1;
+                if (newPrice > 85) {
+                    newPrice = 85;
                 }
-            } else if (soin == 100 || soin == 500) {
-                nvMontant *= 1;
-                if (nvMontant > 75) {
-                    nvMontant = 75;
+            } else if (care == 100 || care == 500) {
+                newPrice *= 1;
+                if (newPrice > 75) {
+                    newPrice = 75;
                 }
-            } else if (soin == 200 || soin == 600) {
-                nvMontant *= 1;
-                if (nvMontant > 100) {
-                    nvMontant = 100;
+            } else if (care == 200 || care == 600) {
+                newPrice *= 1;
+                if (newPrice > 100) {
+                    newPrice = 100;
                 }
-            } else if (soin >= 300 && soin < 400) {
-                nvMontant *= 1;
-            } else if (soin == 400) {
-                nvMontant *= 1;
-                if (nvMontant > 65) {
-                    nvMontant = 65;
+            } else if (care >= 300 && care < 400) {
+                newPrice *= 1;
+            } else if (care == 400) {
+                newPrice *= 1;
+                if (newPrice > 65) {
+                    newPrice = 65;
                 }
-            } else if (soin == 700) {
-                nvMontant *= 1;
-                if (nvMontant > 90) {
-                    nvMontant = 90;
+            } else if (care == 700) {
+                newPrice *= 1;
+                if (newPrice > 90) {
+                    newPrice = 90;
                 }
             }
-            String remboursement = String.format("%.2f", nvMontant);
-            nvList.add(remboursement);
+            String refund = String.format("%.2f", newPrice);
+            newList.add(refund);
         }
-        return nvList;
+        return newList;
     }
     /**
      * permet d'enlever le signe '$' dans les montants
@@ -225,12 +231,12 @@ public class Remboursements {
      *
      * @return Un float nvMontant.
      */
-    public static float replaceAllMontant(List<String> list, int i){
-        float nvMontant;
-        String montant = list.get(i + 2).replaceAll(".$", "");
-        montant = montant.replaceAll(",", ".");
-        nvMontant = Float.valueOf(montant);
-        return nvMontant;
+    public static float replaceAllPrices(List<String> list, int i) {
+        float newPrice;
+        String price = list.get(i + 2).replaceAll(".$", "");
+        price = price.replaceAll(",", ".");
+        newPrice = Float.valueOf(price);
+        return newPrice;
     }
     /**
      * Permet de vérifier si les donnèes dans le inputFile.JSON
@@ -240,8 +246,8 @@ public class Remboursements {
      * @return Un boolean.
      */
     public static boolean valid(List<String> list) {
-        if (!validerClient(list) || !validerContrat(list) || !validerTypeSoin(list)
-                || !validerDates(list) || !validerMois(list) || !validerMoisMois(list)){
+        if (!validClient(list) || !validContract(list) || !validTypeOfCare(list)
+                || !validDates(list) || !validMonths(list) || !validBetweenMonths(list)) {
             return false;
         }
         return true;
@@ -252,7 +258,7 @@ public class Remboursements {
      *
      * @return Un boolean.
      */
-    public static boolean validerClient(List<String> list){
+    public static boolean validClient(List<String> list){
         boolean isValid = true;
         String client = list.get(0);
         if (client.length() != 6) {
@@ -271,10 +277,10 @@ public class Remboursements {
      *
      * @return Un boolean.
      */
-    public static boolean validerContrat(List<String> list){
+    public static boolean validContract(List<String> list){
         boolean isValid = true;
-        String contrat = list.get(1);
-        if (!contrat.equals("A") && !contrat.equals("B") && !contrat.equals("C") && !contrat.equals("D")){
+        String contract = list.get(1);
+        if (!contract.equals("A") && !contract.equals("B") && !contract.equals("C") && !contract.equals("D")) {
             isValid = false;
         }
         return isValid;
@@ -285,13 +291,13 @@ public class Remboursements {
      *
      * @return Un boolean.
      */
-    public static boolean validerTypeSoin(List<String> list){
+    public static boolean validTypeOfCare(List<String> list){
         boolean isValid = true;
         for (int i = 3; i < list.size(); i += 3) {
-            int soin = Integer.parseInt(list.get(i));
-            if (soin < 300 || soin > 399) {
-                if (soin != 0 && soin != 100 && soin != 200 && soin != 400 && soin != 500
-                        && soin != 600 && soin != 700) {
+            int care = Integer.parseInt(list.get(i));
+            if (care < 300 || care > 399) {
+                if (care != 0 && care != 100 && care != 200 && care != 400 && care != 500
+                        && care != 600 && care != 700) {
                     isValid = false;
                 }
             }
@@ -304,9 +310,9 @@ public class Remboursements {
      *
      * @return Un boolean.
      */
-    public static boolean validerDates(List<String> list){
+    public static boolean validDates(List<String> list){
         boolean isValid = true;
-        if (list.get(2).matches("([0-9]{4})-([0-9]{2})")){
+        if (list.get(2).matches("([0-9]{4})-([0-9]{2})")) {
             isValid = true;
         } else {
             isValid = false;
@@ -318,11 +324,11 @@ public class Remboursements {
      *
      * @return Un boolean.
      */
-    public static boolean validerMois(List<String> list) {
+    public static boolean validMonths(List<String> list) {
         boolean isValid = true;
         for (int i = 4; i < list.size(); i += 3) {
-            String dateSoin = list.get(i);
-            if (dateSoin.matches("([0-9]{4})-([0-9]{2})-([0-9]{2})")) {
+            String dateCre = list.get(i);
+            if (dateCre.matches("([0-9]{4})-([0-9]{2})-([0-9]{2})")) {
                 isValid = true;
             } else {
                 return false;
@@ -336,12 +342,12 @@ public class Remboursements {
      *
      * @return Un boolean.
      */
-    public static boolean validerMoisMois(List<String> list){
+    public static boolean validBetweenMonths(List<String> list){
         boolean isValid = true;
-        String mois1 = list.get(2).substring(5, 7);
-        for (int i = 4; i < list.size(); i += 3){
-            String mois2 = list.get(i).substring(5,7);
-            if (mois1.equals(mois2)){
+        String months1 = list.get(2).substring(5, 7);
+        for (int i = 4; i < list.size(); i += 3) {
+            String months2 = list.get(i).substring(5,7);
+            if (months1.equals(months2)) {
                 isValid = true;
             } else {
                 isValid = false;
@@ -357,14 +363,12 @@ public class Remboursements {
      * @return un fichier JSONObject.
      */
     public static void JSONMessageErreur(String filename) {
-        JSONObject messageErreur = new JSONObject();
-        messageErreur.put("message", "Données invalides");
-        Gson gson = new GsonBuilder()
-                .setPrettyPrinting()
-                .create();
-        String erreur = gson.toJson(messageErreur, LinkedHashMap.class);
+        JSONObject messageError = new JSONObject();
+        messageError.put("message", "Données invalides");
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        String error = gson.toJson(messageError, LinkedHashMap.class);
         try {
-            Files.write(Paths.get(filename), erreur.getBytes());
+            Files.write(Paths.get(filename), error.getBytes());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -375,42 +379,77 @@ public class Remboursements {
      *
      * @return un fichier JSONObject.
      */
-    public static Map<String, String> JSONOutputfile(String filename, List<String> list, List<String> nvList) {
+    public static Map<String, String> JSONOutputfile(String filename, List<String> list, List<String> newList) {
+        List<String> finalList = GetLastValue(list, newList);
+        JSONArray refunds = addArrayToJSON(finalList);
+        LinkedHashMap outputObj = addObjectToJSON(refunds, list);
+        String refundsString = formatJSON(outputObj);
+        try {
+            Files.write(Paths.get(filename), refundsString.getBytes());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return outputObj;
+    }
+    /**
+     * Recuperer les elements de list et newList
+     * et les ajoutes dans la list finalList
+     *
+     * @return un List<String> finalList.
+     */
+    public static List<String> GetLastValue(List<String> list, List<String> newList) {
         List<String> finalList = new ArrayList<String>();
         finalList.add(0, list.get(0));
         finalList.add(1, list.get(2));
-        for (int i = 3, j = 0; i < list.size() && j < nvList.size(); i++) {
+        for (int i = 3, j = 0; i < list.size() && j < newList.size(); i++) {
             if ((i - 2) % 3 == 0) {
-                finalList.add(nvList.get(j));
+                finalList.add(newList.get(j));
                 j++;
             } else {
                 finalList.add(list.get(i));
             }
         }
-        JSONArray remboursements = new JSONArray();
-        for (int i = 2; i < finalList.size(); i += 3){
-            LinkedHashMap remboursement = new LinkedHashMap();
-            int soin = Integer.parseInt(finalList.get(i));
-            remboursement.put("soin", soin);
-            remboursement.put("date", finalList.get(i + 1));
-            remboursement.put("montant", finalList.get(i + 2) + "$");
-            remboursements.add(remboursement);
+        return finalList ;
+    }
+    /**
+     * Ajouter les elements JSONArray dans le fichier JSON
+     *
+     * @return un fichier JSONObject.
+     */
+    public static JSONArray addArrayToJSON(List<String> finalList) {
+        JSONArray refunds = new JSONArray();
+        for (int i = 2; i < finalList.size(); i += 3) {
+            LinkedHashMap refund = new LinkedHashMap();
+            int care = Integer.parseInt(finalList.get(i));
+            refund.put("soin", care);
+            refund.put("date", finalList.get(i + 1));
+            refund.put("montant", finalList.get(i + 2) + "$");
+            refunds.add(refund);
         }
+        return refunds;
+    }
+    /**
+     * Ajouter les elements JSONObject dans le fichier JSON
+     *
+     * @return un fichier JSONObject.
+     */
+    public static LinkedHashMap addObjectToJSON(JSONArray refunds, List<String> list) {
         LinkedHashMap outputObj = new LinkedHashMap();
         outputObj.put("client", list.get(0));
         outputObj.put("mois", list.get(2));
-        outputObj.put("remboursements", remboursements);
+        outputObj.put("remboursements", refunds);
+        return outputObj;
+    }
+    /**
+     * Formater le fichier JSON.
+     *
+     * @return un fichier JSONObject bien formater.
+     */
+    public static String formatJSON(LinkedHashMap outputObj) {
         JSONObject object = new JSONObject();
         object.putAll(outputObj);
-        Gson gson = new GsonBuilder()
-                .setPrettyPrinting()
-                .create();
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
         String refunds = gson.toJson(outputObj, LinkedHashMap.class);
-        try {
-            Files.write(Paths.get(filename), refunds.getBytes());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return outputObj;
+        return refunds;
     }
 }
